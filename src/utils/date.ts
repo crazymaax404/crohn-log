@@ -1,20 +1,20 @@
 const MONTH_NAMES_PT_BR = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
 ];
 
 function pad2(value: number): string {
-  return value.toString().padStart(2, '0');
+  return value.toString().padStart(2, "0");
 }
 
 export function dateToISODate(date: Date): string {
@@ -22,7 +22,7 @@ export function dateToISODate(date: Date): string {
 }
 
 export function isoDateToDate(isoDate: string): Date {
-  const [year, month, day] = isoDate.split('-').map(Number);
+  const [year, month, day] = isoDate.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
 
@@ -31,7 +31,7 @@ export function todayISODate(): string {
 }
 
 export function formatBRDate(isoDate: string): string {
-  const [year, month, day] = isoDate.split('-');
+  const [year, month, day] = isoDate.split("-");
   return `${day}/${month}/${year}`;
 }
 

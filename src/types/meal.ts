@@ -1,6 +1,6 @@
-export type MealType = 'breakfast' | 'lunch' | 'afternoon_snack' | 'dinner';
-export type Amount = 'small' | 'normal' | 'large';
-export type Symptom = 'well' | 'discomfort' | 'pain' | 'severe_pain';
+export type MealType = "breakfast" | "lunch" | "afternoon_snack" | "dinner";
+export type Amount = "small" | "normal" | "large";
+export type Symptom = "well" | "discomfort" | "pain" | "severe_pain";
 
 export interface Meal {
   id: string;
