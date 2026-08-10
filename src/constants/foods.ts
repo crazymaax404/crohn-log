@@ -1,0 +1,17 @@
+export const QUICK_FOOD_SUGGESTIONS: string[] = [
+  'Pão',
+  'Arroz',
+  'Feijão',
+  'Frango',
+  'Café',
+  'Ovo',
+  'Peixe',
+  'Banana',
+  'Queijo',
+  'Suco',
+  'Salada',
+  'Tapioca',
+  'Legumes',
+  'Batata',
+  'Maçã',
+];
