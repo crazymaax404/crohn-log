@@ -32,7 +32,7 @@ export function FoodInput({ value, onChangeText, onAdd, suggestions, onAddSugges
       {suggestions.length > 0 && (
         <View style={styles.suggestions}>
           <View style={styles.suggestionsHeader}>
-            <Ionicons name="sparkles" size={14} color="#f59e0b" />
+            <Ionicons name="sparkles" size={14} color={COLORS.primary} />
             <Text style={styles.suggestionsLabel}>SUGESTÕES RÁPIDAS:</Text>
           </View>
           <View style={styles.chips}>
