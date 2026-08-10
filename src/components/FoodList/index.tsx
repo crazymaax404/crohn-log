@@ -5,9 +5,10 @@ import { COLORS } from '../../constants/theme';
 interface FoodListProps {
   foods: string[];
   onRemove: (food: string) => void;
+  onLongPress: (food: string) => void;
 }
 
-export function FoodList({ foods, onRemove }: FoodListProps) {
+export function FoodList({ foods, onRemove, onLongPress }: FoodListProps) {
   if (foods.length === 0) {
     return (
       <View style={styles.box}>
@@ -19,15 +20,24 @@ export function FoodList({ foods, onRemove }: FoodListProps) {
   }
 
   return (
-    <View style={styles.box}>
-      {foods.map((food) => (
-        <View key={food} style={styles.row}>
-          <Text style={styles.foodText}>{food}</Text>
-          <TouchableOpacity onPress={() => onRemove(food)} accessibilityLabel={`Remover ${food}`}>
-            <Ionicons name="close" size={18} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      ))}
+    <View>
+      <View style={styles.box}>
+        {foods.map((food) => (
+          <View key={food} style={styles.row}>
+            <TouchableOpacity
+              style={styles.foodTextWrapper}
+              onLongPress={() => onLongPress(food)}
+              delayLongPress={350}
+            >
+              <Text style={styles.foodText}>{food}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onRemove(food)} accessibilityLabel={`Remover ${food}`}>
+              <Ionicons name="close" size={18} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+      <Text style={styles.hint}>Toque e segure em um item para renomear.</Text>
     </View>
   );
 }
@@ -52,8 +62,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  foodTextWrapper: {
+    flex: 1,
+    paddingVertical: 2,
+  },
   foodText: {
     fontSize: 15,
     color: COLORS.textPrimary,
+  },
+  hint: {
+    fontSize: 11,
+    color: COLORS.placeholder,
+    marginTop: 6,
   },
 });

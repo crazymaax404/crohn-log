@@ -7,13 +7,14 @@ import { MealTypeSelector } from '../MealTypeSelector';
 import { SymptomSelector } from '../SymptomSelector';
 import { FoodInput } from '../FoodInput';
 import { FoodList } from '../FoodList';
-import { FoodWarningModal } from '../FoodWarningModal';
+import { FoodPainHistoryCard } from '../FoodPainHistoryCard';
+import { RenameFoodModal } from '../RenameFoodModal';
 import { COLORS } from '../../constants/theme';
 import { normalizeFood, isBlankFood } from '../../utils/foodNormalizer';
 import { dateToISODate, formatBRDate, isoDateToDate, todayISODate } from '../../utils/date';
-import { useFoodPainHistoryCheck } from '../../hooks/useFoodPainHistory';
-import { useMealsQuery } from '../../hooks/useMeals';
-import type { Amount, Meal, MealInput, MealType, PainHistoryMatch, Symptom } from '../../types/meal';
+import { useFoodPainHistoryQuery } from '../../hooks/useFoodPainHistory';
+import { useMealsQuery, useRenameFoodMutation } from '../../hooks/useMeals';
+import type { Amount, Meal, MealInput, MealType, Symptom } from '../../types/meal';
 
 interface MealFormProps {
   initialMeal?: Meal;
@@ -21,12 +22,6 @@ interface MealFormProps {
   submitLabel: string;
   submitting: boolean;
   onSubmit: (input: MealInput) => void;
-}
-
-function mergeMatches(existing: PainHistoryMatch[], incoming: PainHistoryMatch[]): PainHistoryMatch[] {
-  const merged = new Map(existing.map((match) => [normalizeFood(match.food), match]));
-  incoming.forEach((match) => merged.set(normalizeFood(match.food), match));
-  return Array.from(merged.values());
 }
 
 export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, onSubmit }: MealFormProps) {
@@ -38,11 +33,12 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
   const [notes, setNotes] = useState(initialMeal?.notes ?? '');
   const [symptom, setSymptom] = useState<Symptom>(initialMeal?.symptom ?? 'well');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pendingMatches, setPendingMatches] = useState<PainHistoryMatch[]>([]);
-  const [warningVisible, setWarningVisible] = useState(false);
+  const [renamingFood, setRenamingFood] = useState<string | null>(null);
 
-  const checkHistory = useFoodPainHistoryCheck();
   const mealsQuery = useMealsQuery();
+  const renameFood = useRenameFoodMutation();
+  const painHistoryQuery = useFoodPainHistoryQuery(foods, excludeMealId);
+  const painHistoryMatches = painHistoryQuery.data ?? [];
 
   const registeredFoods = useMemo(() => {
     const foodByNormalized = new Map<string, string>();
@@ -73,26 +69,54 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
 
     setFoods((prev) => [...prev, trimmed]);
     setFoodInputValue('');
-
-    checkHistory.mutate(
-      { foods: [trimmed], excludeMealId },
-      {
-        onSuccess: (matches) => {
-          if (matches.length === 0) return;
-          setPendingMatches((prev) => mergeMatches(prev, matches));
-          setWarningVisible(true);
-        },
-      },
-    );
   }
 
   function handleRemoveFood(food: string) {
     setFoods((prev) => prev.filter((item) => item !== food));
   }
 
-  function handleCloseWarning() {
-    setWarningVisible(false);
-    setPendingMatches([]);
+  function handleLongPressFood(food: string) {
+    setRenamingFood(food);
+  }
+
+  function handleCancelRename() {
+    setRenamingFood(null);
+  }
+
+  function handleConfirmRename(newValue: string) {
+    if (renamingFood === null) return;
+
+    const trimmed = newValue.trim();
+    if (isBlankFood(trimmed)) {
+      Alert.alert('Nome inválido', 'Informe um nome para o alimento.');
+      return;
+    }
+
+    const normalizedNew = normalizeFood(trimmed);
+    const duplicate = foods.some((food) => food !== renamingFood && normalizeFood(food) === normalizedNew);
+    if (duplicate) {
+      Alert.alert('Alimento duplicado', 'Esse alimento já está nessa lista.');
+      return;
+    }
+
+    const originalFood = renamingFood;
+    renameFood.mutate(
+      { oldFood: originalFood, newFood: trimmed, excludeMealId },
+      {
+        onSuccess: (affectedCount) => {
+          setFoods((prev) => prev.map((food) => (food === originalFood ? trimmed : food)));
+          setRenamingFood(null);
+          if (affectedCount > 0) {
+            Alert.alert(
+              'Alimento atualizado',
+              `"${originalFood}" foi renomeado para "${trimmed}" em ${affectedCount} refeição(ões) anterior(es).`,
+            );
+          }
+        },
+        onError: () =>
+          Alert.alert('Não foi possível renomear', 'Verifique sua conexão e tente novamente.'),
+      },
+    );
   }
 
   function handleDateChange(_event: unknown, selectedDate?: Date) {
@@ -153,11 +177,12 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
       </View>
 
       <View style={styles.section}>
+        <FoodPainHistoryCard matches={painHistoryMatches} />
         <View style={styles.sectionHeaderSpaced}>
           <Text style={styles.sectionLabel}>O QUE VOCÊ COMEU?</Text>
           <Text style={styles.itemCount}>{foods.length} ITENS</Text>
         </View>
-        <FoodList foods={foods} onRemove={handleRemoveFood} />
+        <FoodList foods={foods} onRemove={handleRemoveFood} onLongPress={handleLongPressFood} />
         <FoodInput
           value={foodInputValue}
           onChangeText={setFoodInputValue}
@@ -199,7 +224,13 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
         <Text style={styles.submitButtonText}>{submitting ? 'Salvando...' : submitLabel}</Text>
       </TouchableOpacity>
 
-      <FoodWarningModal visible={warningVisible} matches={pendingMatches} onClose={handleCloseWarning} />
+      <RenameFoodModal
+        visible={renamingFood !== null}
+        initialValue={renamingFood ?? ''}
+        submitting={renameFood.isPending}
+        onCancel={handleCancelRename}
+        onConfirm={handleConfirmRename}
+      />
     </ScrollView>
   );
 }

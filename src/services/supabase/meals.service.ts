@@ -119,3 +119,29 @@ export async function findFoodPainHistory(
 
   return Array.from(matchesByFood.values());
 }
+
+export async function renameFoodAcrossMeals(
+  oldFood: string,
+  newFood: string,
+  excludeMealId?: string,
+): Promise<number> {
+  const normalizedOld = normalizeFood(oldFood);
+  const meals = await listMeals();
+  const affectedMeals = meals.filter(
+    (meal) => meal.id !== excludeMealId && meal.foods.some((food) => normalizeFood(food) === normalizedOld),
+  );
+
+  for (const meal of affectedMeals) {
+    const updatedFoods = meal.foods.map((food) => (normalizeFood(food) === normalizedOld ? newFood : food));
+    await updateMeal(meal.id, {
+      mealType: meal.mealType,
+      amount: meal.amount,
+      foods: updatedFoods,
+      symptom: meal.symptom,
+      notes: meal.notes,
+      mealDate: meal.mealDate,
+    });
+  }
+
+  return affectedMeals.length;
+}

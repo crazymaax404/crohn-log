@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createMeal, deleteMeal, listMeals, updateMeal } from '../services/supabase/meals.service';
+import {
+  createMeal,
+  deleteMeal,
+  listMeals,
+  renameFoodAcrossMeals,
+  updateMeal,
+} from '../services/supabase/meals.service';
 import type { MealInput } from '../types/meal';
 
 const MEALS_QUERY_KEY = ['meals'];
@@ -28,6 +34,15 @@ export function useDeleteMealMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteMeal(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MEALS_QUERY_KEY }),
+  });
+}
+
+export function useRenameFoodMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ oldFood, newFood, excludeMealId }: { oldFood: string; newFood: string; excludeMealId?: string }) =>
+      renameFoodAcrossMeals(oldFood, newFood, excludeMealId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: MEALS_QUERY_KEY }),
   });
 }
