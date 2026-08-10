@@ -1,8 +1,16 @@
-import { supabase } from '../../config/supabase';
-import { normalizeFood } from '../../utils/foodNormalizer';
-import type { Amount, Meal, MealInput, MealType, PainHistoryMatch, Symptom } from '../../types/meal';
+import { supabase } from "../../config/supabase";
+import { normalizeFood } from "../../utils/foodNormalizer";
+import type {
+  Amount,
+  Meal,
+  MealInput,
+  MealType,
+  PainHistoryMatch,
+  Symptom,
+} from "../../types/meal";
 
-const MEAL_COLUMNS = 'id, meal_type, amount, foods, symptom, notes, meal_date, created_at, updated_at';
+const MEAL_COLUMNS =
+  "id, meal_type, amount, foods, symptom, notes, meal_date, created_at, updated_at";
 
 interface MealRow {
   id: string;
@@ -43,10 +51,10 @@ function mealInputToRow(input: MealInput) {
 
 export async function listMeals(): Promise<Meal[]> {
   const { data, error } = await supabase
-    .from('meals')
+    .from("meals")
     .select(MEAL_COLUMNS)
-    .order('meal_date', { ascending: false })
-    .order('created_at', { ascending: false });
+    .order("meal_date", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   return (data as MealRow[]).map(rowToMeal);
@@ -54,7 +62,7 @@ export async function listMeals(): Promise<Meal[]> {
 
 export async function createMeal(input: MealInput): Promise<Meal> {
   const { data, error } = await supabase
-    .from('meals')
+    .from("meals")
     .insert(mealInputToRow(input))
     .select(MEAL_COLUMNS)
     .single();
@@ -65,9 +73,9 @@ export async function createMeal(input: MealInput): Promise<Meal> {
 
 export async function updateMeal(id: string, input: MealInput): Promise<Meal> {
   const { data, error } = await supabase
-    .from('meals')
+    .from("meals")
     .update({ ...mealInputToRow(input), updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .eq("id", id)
     .select(MEAL_COLUMNS)
     .single();
 
@@ -76,7 +84,7 @@ export async function updateMeal(id: string, input: MealInput): Promise<Meal> {
 }
 
 export async function deleteMeal(id: string): Promise<void> {
-  const { error } = await supabase.from('meals').delete().eq('id', id);
+  const { error } = await supabase.from("meals").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -88,14 +96,14 @@ export async function findFoodPainHistory(
   if (normalizedTargets.size === 0) return [];
 
   let query = supabase
-    .from('meals')
-    .select('id, meal_type, foods, symptom, meal_date')
-    .in('symptom', ['pain', 'severe_pain'])
-    .order('meal_date', { ascending: false })
-    .order('created_at', { ascending: false });
+    .from("meals")
+    .select("id, meal_type, foods, symptom, meal_date")
+    .in("symptom", ["pain", "severe_pain"])
+    .order("meal_date", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (excludeMealId) {
-    query = query.neq('id', excludeMealId);
+    query = query.neq("id", excludeMealId);
   }
 
   const { data, error } = await query;
@@ -103,10 +111,17 @@ export async function findFoodPainHistory(
 
   const matchesByFood = new Map<string, PainHistoryMatch>();
 
-  for (const row of data as Pick<MealRow, 'id' | 'meal_type' | 'foods' | 'symptom' | 'meal_date'>[]) {
+  for (const row of data as Pick<
+    MealRow,
+    "id" | "meal_type" | "foods" | "symptom" | "meal_date"
+  >[]) {
     for (const historicalFood of row.foods) {
       const normalizedFood = normalizeFood(historicalFood);
-      if (!normalizedTargets.has(normalizedFood) || matchesByFood.has(normalizedFood)) continue;
+      if (
+        !normalizedTargets.has(normalizedFood) ||
+        matchesByFood.has(normalizedFood)
+      )
+        continue;
 
       matchesByFood.set(normalizedFood, {
         food: historicalFood,
@@ -128,11 +143,15 @@ export async function renameFoodAcrossMeals(
   const normalizedOld = normalizeFood(oldFood);
   const meals = await listMeals();
   const affectedMeals = meals.filter(
-    (meal) => meal.id !== excludeMealId && meal.foods.some((food) => normalizeFood(food) === normalizedOld),
+    (meal) =>
+      meal.id !== excludeMealId &&
+      meal.foods.some((food) => normalizeFood(food) === normalizedOld),
   );
 
   for (const meal of affectedMeals) {
-    const updatedFoods = meal.foods.map((food) => (normalizeFood(food) === normalizedOld ? newFood : food));
+    const updatedFoods = meal.foods.map((food) =>
+      normalizeFood(food) === normalizedOld ? newFood : food,
+    );
     await updateMeal(meal.id, {
       mealType: meal.mealType,
       amount: meal.amount,

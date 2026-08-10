@@ -1,37 +1,56 @@
-import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useMemo, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AmountSelector } from '../AmountSelector';
-import { MealTypeSelector } from '../MealTypeSelector';
-import { SymptomSelector } from '../SymptomSelector';
-import { FoodInput } from '../FoodInput';
-import { FoodList } from '../FoodList';
-import { FoodPainHistoryCard } from '../FoodPainHistoryCard';
-import { RenameFoodModal } from '../RenameFoodModal';
-import { COLORS } from '../../constants/theme';
-import { normalizeFood, isBlankFood } from '../../utils/foodNormalizer';
-import { dateToISODate, formatBRDate, isoDateToDate, todayISODate } from '../../utils/date';
-import { useFoodPainHistoryQuery } from '../../hooks/useFoodPainHistory';
-import { useMealsQuery, useRenameFoodMutation } from '../../hooks/useMeals';
-import type { Amount, Meal, MealInput, MealType, Symptom } from '../../types/meal';
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useMemo, useState } from "react";
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { AmountSelector } from "../AmountSelector";
+import { MealTypeSelector } from "../MealTypeSelector";
+import { SymptomSelector } from "../SymptomSelector";
+import { FoodInput } from "../FoodInput";
+import { FoodList } from "../FoodList";
+import { FoodPainHistoryCard } from "../FoodPainHistoryCard";
+import { RenameFoodModal } from "../RenameFoodModal";
+import { COLORS } from "../../constants/theme";
+import { normalizeFood, isBlankFood } from "../../utils/foodNormalizer";
+import {
+  dateToISODate,
+  formatBRDate,
+  isoDateToDate,
+  todayISODate,
+} from "../../utils/date";
+import { useFoodPainHistoryQuery } from "../../hooks/useFoodPainHistory";
+import { useMealsQuery, useRenameFoodMutation } from "../../hooks/useMeals";
+import { styles } from "./mealForm.styles";
+import type { MealFormProps } from "./mealForm.interfaces";
+import type { Amount, MealType, Symptom } from "../../types/meal";
 
-interface MealFormProps {
-  initialMeal?: Meal;
-  excludeMealId?: string;
-  submitLabel: string;
-  submitting: boolean;
-  onSubmit: (input: MealInput) => void;
-}
-
-export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, onSubmit }: MealFormProps) {
-  const [mealDate, setMealDate] = useState(initialMeal?.mealDate ?? todayISODate());
-  const [mealType, setMealType] = useState<MealType>(initialMeal?.mealType ?? 'breakfast');
-  const [amount, setAmount] = useState<Amount>(initialMeal?.amount ?? 'normal');
+export function MealForm({
+  initialMeal,
+  excludeMealId,
+  submitLabel,
+  submitting,
+  onSubmit,
+}: MealFormProps) {
+  const [mealDate, setMealDate] = useState(
+    initialMeal?.mealDate ?? todayISODate(),
+  );
+  const [mealType, setMealType] = useState<MealType>(
+    initialMeal?.mealType ?? "breakfast",
+  );
+  const [amount, setAmount] = useState<Amount>(initialMeal?.amount ?? "normal");
   const [foods, setFoods] = useState<string[]>(initialMeal?.foods ?? []);
-  const [foodInputValue, setFoodInputValue] = useState('');
-  const [notes, setNotes] = useState(initialMeal?.notes ?? '');
-  const [symptom, setSymptom] = useState<Symptom>(initialMeal?.symptom ?? 'well');
+  const [foodInputValue, setFoodInputValue] = useState("");
+  const [notes, setNotes] = useState(initialMeal?.notes ?? "");
+  const [symptom, setSymptom] = useState<Symptom>(
+    initialMeal?.symptom ?? "well",
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [renamingFood, setRenamingFood] = useState<string | null>(null);
 
@@ -50,11 +69,17 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
         }
       }
     }
-    return Array.from(foodByNormalized.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    return Array.from(foodByNormalized.values()).sort((a, b) =>
+      a.localeCompare(b, "pt-BR"),
+    );
   }, [mealsQuery.data]);
 
   const suggestions = useMemo(
-    () => registeredFoods.filter((food) => !foods.some((added) => normalizeFood(added) === normalizeFood(food))),
+    () =>
+      registeredFoods.filter(
+        (food) =>
+          !foods.some((added) => normalizeFood(added) === normalizeFood(food)),
+      ),
     [registeredFoods, foods],
   );
 
@@ -63,12 +88,12 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
     const trimmed = rawFood.trim();
     const normalized = normalizeFood(trimmed);
     if (foods.some((food) => normalizeFood(food) === normalized)) {
-      setFoodInputValue('');
+      setFoodInputValue("");
       return;
     }
 
     setFoods((prev) => [...prev, trimmed]);
-    setFoodInputValue('');
+    setFoodInputValue("");
   }
 
   function handleRemoveFood(food: string) {
@@ -88,14 +113,16 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
 
     const trimmed = newValue.trim();
     if (isBlankFood(trimmed)) {
-      Alert.alert('Nome inválido', 'Informe um nome para o alimento.');
+      Alert.alert("Nome inválido", "Informe um nome para o alimento.");
       return;
     }
 
     const normalizedNew = normalizeFood(trimmed);
-    const duplicate = foods.some((food) => food !== renamingFood && normalizeFood(food) === normalizedNew);
+    const duplicate = foods.some(
+      (food) => food !== renamingFood && normalizeFood(food) === normalizedNew,
+    );
     if (duplicate) {
-      Alert.alert('Alimento duplicado', 'Esse alimento já está nessa lista.');
+      Alert.alert("Alimento duplicado", "Esse alimento já está nessa lista.");
       return;
     }
 
@@ -104,17 +131,22 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
       { oldFood: originalFood, newFood: trimmed, excludeMealId },
       {
         onSuccess: (affectedCount) => {
-          setFoods((prev) => prev.map((food) => (food === originalFood ? trimmed : food)));
+          setFoods((prev) =>
+            prev.map((food) => (food === originalFood ? trimmed : food)),
+          );
           setRenamingFood(null);
           if (affectedCount > 0) {
             Alert.alert(
-              'Alimento atualizado',
+              "Alimento atualizado",
               `"${originalFood}" foi renomeado para "${trimmed}" em ${affectedCount} refeição(ões) anterior(es).`,
             );
           }
         },
         onError: () =>
-          Alert.alert('Não foi possível renomear', 'Verifique sua conexão e tente novamente.'),
+          Alert.alert(
+            "Não foi possível renomear",
+            "Verifique sua conexão e tente novamente.",
+          ),
       },
     );
   }
@@ -128,7 +160,10 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
 
   function handleSubmit() {
     if (foods.length === 0) {
-      Alert.alert('Adicione pelo menos um alimento', 'Informe o que você comeu antes de salvar.');
+      Alert.alert(
+        "Adicione pelo menos um alimento",
+        "Informe o que você comeu antes de salvar.",
+      );
       return;
     }
 
@@ -149,7 +184,10 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
           <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
           <Text style={styles.sectionLabel}>DATA DA REFEIÇÃO</Text>
         </View>
-        <TouchableOpacity style={styles.dateBox} onPress={() => setShowDatePicker(true)}>
+        <TouchableOpacity
+          style={styles.dateBox}
+          onPress={() => setShowDatePicker(true)}
+        >
           <Text style={styles.dateText}>{formatBRDate(mealDate)}</Text>
           <Ionicons name="calendar" size={18} color={COLORS.textSecondary} />
         </TouchableOpacity>
@@ -157,7 +195,7 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
           <DateTimePicker
             value={isoDateToDate(mealDate)}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={Platform.OS === "ios" ? "spinner" : "default"}
             onChange={handleDateChange}
           />
         )}
@@ -165,7 +203,11 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="restaurant-outline" size={16} color={COLORS.primary} />
+          <Ionicons
+            name="restaurant-outline"
+            size={16}
+            color={COLORS.primary}
+          />
           <Text style={styles.sectionLabel}>QUAL REFEIÇÃO?</Text>
         </View>
         <MealTypeSelector value={mealType} onChange={setMealType} />
@@ -182,7 +224,11 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
           <Text style={styles.sectionLabel}>O QUE VOCÊ COMEU?</Text>
           <Text style={styles.itemCount}>{foods.length} ITENS</Text>
         </View>
-        <FoodList foods={foods} onRemove={handleRemoveFood} onLongPress={handleLongPressFood} />
+        <FoodList
+          foods={foods}
+          onRemove={handleRemoveFood}
+          onLongPress={handleLongPressFood}
+        />
         <FoodInput
           value={foodInputValue}
           onChangeText={setFoodInputValue}
@@ -195,7 +241,11 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
       <View style={styles.section}>
         <View style={styles.sectionHeaderSpaced}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="document-text-outline" size={16} color={COLORS.primary} />
+            <Ionicons
+              name="document-text-outline"
+              size={16}
+              color={COLORS.primary}
+            />
             <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
           </View>
           <Text style={styles.itemCount}>OPCIONAL</Text>
@@ -212,7 +262,9 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>COMO VOCÊ FICOU APÓS A REFEIÇÃO?</Text>
+        <Text style={styles.sectionLabel}>
+          COMO VOCÊ FICOU APÓS A REFEIÇÃO?
+        </Text>
         <SymptomSelector value={symptom} onChange={setSymptom} />
       </View>
 
@@ -221,12 +273,14 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
         onPress={handleSubmit}
         disabled={submitting}
       >
-        <Text style={styles.submitButtonText}>{submitting ? 'Salvando...' : submitLabel}</Text>
+        <Text style={styles.submitButtonText}>
+          {submitting ? "Salvando..." : submitLabel}
+        </Text>
       </TouchableOpacity>
 
       <RenameFoodModal
         visible={renamingFood !== null}
-        initialValue={renamingFood ?? ''}
+        initialValue={renamingFood ?? ""}
         submitting={renameFood.isPending}
         onCancel={handleCancelRename}
         onConfirm={handleConfirmRename}
@@ -234,73 +288,3 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    padding: 20,
-    gap: 22,
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  sectionHeaderSpaced: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-  },
-  itemCount: {
-    fontSize: 12,
-    color: COLORS.placeholder,
-  },
-  dateBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    backgroundColor: COLORS.background,
-  },
-  dateText: {
-    fontSize: 15,
-    color: COLORS.textPrimary,
-  },
-  notesInput: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 14,
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.background,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  submitButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitButtonText: {
-    color: COLORS.surface,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});
