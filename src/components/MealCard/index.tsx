@@ -9,7 +9,6 @@ import {
   SYMPTOM_ICONS,
   SYMPTOM_LABELS,
 } from '../../constants/labels';
-import { formatTime } from '../../utils/date';
 import type { Meal } from '../../types/meal';
 
 interface MealCardProps {
@@ -21,9 +20,7 @@ export function MealCard({ meal, onPress }: MealCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>
-          {MEAL_TYPE_LABELS[meal.mealType]} <Text style={styles.time}>· {formatTime(meal.createdAt)}</Text>
-        </Text>
+        <Text style={styles.title}>{MEAL_TYPE_LABELS[meal.mealType]}</Text>
         <View style={[styles.symptomBadge, { backgroundColor: SYMPTOM_BACKGROUND_COLORS[meal.symptom] }]}>
           <View style={[styles.symptomDot, { backgroundColor: SYMPTOM_COLORS[meal.symptom] }]} />
           <Ionicons name={SYMPTOM_ICONS[meal.symptom]} size={14} color={SYMPTOM_COLORS[meal.symptom]} />
@@ -68,11 +65,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: COLORS.textPrimary,
-  },
-  time: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
   },
   symptomBadge: {
     flexDirection: 'row',
