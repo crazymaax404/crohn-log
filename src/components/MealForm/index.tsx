@@ -9,10 +9,10 @@ import { FoodInput } from '../FoodInput';
 import { FoodList } from '../FoodList';
 import { FoodWarningModal } from '../FoodWarningModal';
 import { COLORS } from '../../constants/theme';
-import { QUICK_FOOD_SUGGESTIONS } from '../../constants/foods';
 import { normalizeFood, isBlankFood } from '../../utils/foodNormalizer';
 import { dateToISODate, formatBRDate, isoDateToDate, todayISODate } from '../../utils/date';
 import { useFoodPainHistoryCheck } from '../../hooks/useFoodPainHistory';
+import { useMealsQuery } from '../../hooks/useMeals';
 import type { Amount, Meal, MealInput, MealType, PainHistoryMatch, Symptom } from '../../types/meal';
 
 interface MealFormProps {
@@ -42,10 +42,24 @@ export function MealForm({ initialMeal, excludeMealId, submitLabel, submitting, 
   const [warningVisible, setWarningVisible] = useState(false);
 
   const checkHistory = useFoodPainHistoryCheck();
+  const mealsQuery = useMealsQuery();
+
+  const registeredFoods = useMemo(() => {
+    const foodByNormalized = new Map<string, string>();
+    for (const meal of mealsQuery.data ?? []) {
+      for (const food of meal.foods) {
+        const normalized = normalizeFood(food);
+        if (!foodByNormalized.has(normalized)) {
+          foodByNormalized.set(normalized, food);
+        }
+      }
+    }
+    return Array.from(foodByNormalized.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [mealsQuery.data]);
 
   const suggestions = useMemo(
-    () => QUICK_FOOD_SUGGESTIONS.filter((food) => !foods.some((added) => normalizeFood(added) === normalizeFood(food))),
-    [foods],
+    () => registeredFoods.filter((food) => !foods.some((added) => normalizeFood(added) === normalizeFood(food))),
+    [registeredFoods, foods],
   );
 
   function handleAddFood(rawFood: string) {
