@@ -4,9 +4,16 @@ import { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MealForm } from '../../components/MealForm';
 import { COLORS } from '../../constants/theme';
-import { AMOUNT_LABELS, MEAL_TYPE_LABELS, SYMPTOM_LABELS } from '../../constants/labels';
+import {
+  AMOUNT_LABELS,
+  MEAL_TYPE_LABELS,
+  SYMPTOM_BACKGROUND_COLORS,
+  SYMPTOM_COLORS,
+  SYMPTOM_ICONS,
+  SYMPTOM_LABELS,
+} from '../../constants/labels';
 import { useDeleteMealMutation, useMealsQuery, useUpdateMealMutation } from '../../hooks/useMeals';
-import { formatFullDate, formatTime } from '../../utils/date';
+import { formatFullDate } from '../../utils/date';
 import type { RootStackParamList } from '../../navigation/AppNavigation';
 import type { MealInput } from '../../types/meal';
 
@@ -83,47 +90,75 @@ export function MealDetailsScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>{MEAL_TYPE_LABELS[meal.mealType]}</Text>
+        <View style={styles.headerTitleRow}>
+          <Ionicons name="restaurant" size={20} color={COLORS.primary} />
+          <Text style={styles.title}>{MEAL_TYPE_LABELS[meal.mealType]}</Text>
+        </View>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <Ionicons name="close" size={20} color={COLORS.textSecondary} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.dateText}>{formatFullDate(meal.mealDate)}</Text>
-        <Text style={styles.timeText}>{formatTime(meal.createdAt)}</Text>
+      <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Quantidade</Text>
-          <Text style={styles.sectionValue}>{AMOUNT_LABELS[meal.amount]}</Text>
+      <View style={styles.content}>
+        <View style={styles.dateBox}>
+          <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
+          <Text style={styles.dateBoxText}>{formatFullDate(meal.mealDate)}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>O que comeu</Text>
-          {meal.foods.map((food) => (
-            <Text key={food} style={styles.foodItem}>
-              • {food}
-            </Text>
-          ))}
+          <Text style={styles.sectionLabel}>QUANTIDADE INGERIDA</Text>
+          <View style={styles.pill}>
+            <Text style={styles.pillText}>{AMOUNT_LABELS[meal.amount]}</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>O QUE COMEU</Text>
+          <View style={styles.foodsBox}>
+            {meal.foods.map((food) => (
+              <View key={food} style={styles.foodRow}>
+                <View style={styles.foodDot} />
+                <Text style={styles.foodText}>{food}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         {meal.notes && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Observações</Text>
-            <Text style={styles.sectionValue}>{meal.notes}</Text>
+            <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
+            <View style={styles.notesBox}>
+              <Text style={styles.notesText}>{meal.notes}</Text>
+            </View>
           </View>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Como ficou</Text>
-          <Text style={styles.sectionValue}>{SYMPTOM_LABELS[meal.symptom]}</Text>
+          <Text style={styles.sectionLabel}>COMO FICOU APÓS A REFEIÇÃO</Text>
+          <View
+            style={[
+              styles.symptomPill,
+              { backgroundColor: SYMPTOM_BACKGROUND_COLORS[meal.symptom], borderColor: SYMPTOM_COLORS[meal.symptom] },
+            ]}
+          >
+            <Ionicons name={SYMPTOM_ICONS[meal.symptom]} size={18} color={SYMPTOM_COLORS[meal.symptom]} />
+            <Text style={[styles.symptomPillText, { color: SYMPTOM_COLORS[meal.symptom] }]}>
+              {SYMPTOM_LABELS[meal.symptom]}
+            </Text>
+          </View>
         </View>
+
+        <View style={styles.divider} />
 
         <View style={styles.actionsRow}>
           <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={() => setIsEditing(true)}>
+            <Ionicons name="pencil" size={16} color={COLORS.textPrimary} />
             <Text style={styles.editButtonText}>Editar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
+            <Ionicons name="trash" size={16} color="#c0392b" />
             <Text style={styles.deleteButtonText}>Excluir</Text>
           </TouchableOpacity>
         </View>
@@ -143,9 +178,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingBottom: 16,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   title: {
     fontSize: 22,
@@ -160,21 +198,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 20,
+  },
   content: {
     padding: 20,
-    gap: 18,
+    gap: 20,
   },
-  dateText: {
+  dateBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  dateBoxText: {
     fontSize: 15,
     color: COLORS.textPrimary,
   },
-  timeText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginTop: -12,
-  },
   section: {
-    gap: 4,
+    gap: 8,
   },
   sectionLabel: {
     fontSize: 12,
@@ -182,30 +229,81 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     letterSpacing: 0.5,
   },
-  sectionValue: {
+  pill: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  pillText: {
     fontSize: 16,
+    fontWeight: '700',
     color: COLORS.textPrimary,
   },
-  foodItem: {
+  foodsBox: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 14,
+    gap: 12,
+  },
+  foodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  foodDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
+  },
+  foodText: {
     fontSize: 15,
+    fontWeight: '600',
     color: COLORS.textPrimary,
+  },
+  notesBox: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 14,
+  },
+  notesText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+  },
+  symptomPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  symptomPillText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   actionsRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 10,
   },
   actionButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: 'center',
   },
   editButton: {
-    backgroundColor: COLORS.selectedDark,
+    backgroundColor: COLORS.background,
   },
   editButtonText: {
-    color: COLORS.surface,
+    color: COLORS.textPrimary,
     fontWeight: '700',
   },
   deleteButton: {
