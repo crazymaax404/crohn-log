@@ -1,11 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-  Alert,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MealForm } from "../../components/MealForm";
 import { COLORS } from "../../constants/theme";
 import { useCreateMealMutation } from "../../hooks/useMeals";

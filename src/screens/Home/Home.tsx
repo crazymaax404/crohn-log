@@ -1,12 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import {
-  SafeAreaView,
-  SectionList,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { SectionList, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MealCard } from "../../components/MealCard";
 import { MealFilter, type MealFilterValue } from "../../components/MealFilter";
 import { PeriodSummary } from "../../components/PeriodSummary";
