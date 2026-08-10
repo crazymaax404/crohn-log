@@ -45,17 +45,14 @@ export const SYMPTOM_ICONS: Record<Symptom, IoniconName> = {
 
 export const SYMPTOM_COLORS: Record<Symptom, string> = {
   well: '#0f9d6c',
-  discomfort: '#b7860b',
-  pain: '#c0392b',
-  severe_pain: '#c0392b',
+  discomfort: '#a16207',
+  pain: '#d97706',
+  severe_pain: '#dc2626',
 };
 
 export const SYMPTOM_BACKGROUND_COLORS: Record<Symptom, string> = {
   well: '#e3f7ee',
   discomfort: '#fdf3d6',
-  pain: '#fbe4e2',
-  severe_pain: '#fbe4e2',
+  pain: '#fdecd8',
+  severe_pain: '#fbe2e1',
 };
-
-export const isPainfulSymptom = (symptom: Symptom): boolean =>
-  symptom === 'pain' || symptom === 'severe_pain';

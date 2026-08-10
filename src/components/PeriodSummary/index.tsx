@@ -1,7 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../../constants/theme';
-import { isPainfulSymptom } from '../../constants/labels';
+import {
+  SYMPTOM_BACKGROUND_COLORS,
+  SYMPTOM_COLORS,
+  SYMPTOM_LABELS,
+  SYMPTOM_ORDER,
+} from '../../constants/labels';
 import type { Meal } from '../../types/meal';
 
 interface PeriodSummaryProps {
@@ -10,10 +15,6 @@ interface PeriodSummaryProps {
 
 export function PeriodSummary({ meals }: PeriodSummaryProps) {
   const totalFoods = meals.reduce((sum, meal) => sum + meal.foods.length, 0);
-  const wellCount = meals.filter((meal) => meal.symptom === 'well').length;
-  const discomfortCount = meals.filter((meal) => meal.symptom === 'discomfort').length;
-  const painCount = meals.filter((meal) => isPainfulSymptom(meal.symptom)).length;
-  const wellPercent = meals.length > 0 ? Math.round((wellCount / meals.length) * 100) : 0;
 
   return (
     <View style={styles.card}>
@@ -27,19 +28,21 @@ export function PeriodSummary({ meals }: PeriodSummaryProps) {
         </View>
       </View>
 
-      <View style={styles.statsRow}>
-        <View style={[styles.statBox, styles.statBoxWell]}>
-          <Text style={styles.statValueWell}>😊 {wellPercent}%</Text>
-          <Text style={styles.statLabelWell}>Ficou bem ({wellCount})</Text>
-        </View>
-        <View style={[styles.statBox, styles.statBoxDiscomfort]}>
-          <Text style={styles.statValueDiscomfort}>{discomfortCount}</Text>
-          <Text style={styles.statLabelDiscomfort}>Incômodo</Text>
-        </View>
-        <View style={[styles.statBox, styles.statBoxPain]}>
-          <Text style={styles.statValuePain}>⚠ {painCount}</Text>
-          <Text style={styles.statLabelPain}>Com dor / muita dor</Text>
-        </View>
+      <View style={styles.statsGrid}>
+        {SYMPTOM_ORDER.map((symptom) => {
+          const count = meals.filter((meal) => meal.symptom === symptom).length;
+          return (
+            <View
+              key={symptom}
+              style={[styles.statBox, { backgroundColor: SYMPTOM_BACKGROUND_COLORS[symptom] }]}
+            >
+              <Text style={[styles.statValue, { color: SYMPTOM_COLORS[symptom] }]}>{count}</Text>
+              <Text style={[styles.statLabel, { color: SYMPTOM_COLORS[symptom] }]}>
+                {SYMPTOM_LABELS[symptom]}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -80,25 +83,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
   },
-  statsRow: {
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
   },
   statBox: {
-    flex: 1,
+    flexBasis: '47%',
+    flexGrow: 1,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 8,
     alignItems: 'center',
     gap: 4,
   },
-  statBoxWell: { backgroundColor: '#e3f7ee' },
-  statBoxDiscomfort: { backgroundColor: '#fdf3d6' },
-  statBoxPain: { backgroundColor: '#fbe4e2' },
-  statValueWell: { fontSize: 18, fontWeight: '700', color: '#0f9d6c' },
-  statValueDiscomfort: { fontSize: 18, fontWeight: '700', color: '#b7860b' },
-  statValuePain: { fontSize: 18, fontWeight: '700', color: '#c0392b' },
-  statLabelWell: { fontSize: 11, color: '#0f9d6c', textAlign: 'center' },
-  statLabelDiscomfort: { fontSize: 11, color: '#b7860b', textAlign: 'center' },
-  statLabelPain: { fontSize: 11, color: '#c0392b', textAlign: 'center' },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
 });

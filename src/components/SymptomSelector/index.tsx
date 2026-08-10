@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../../constants/theme';
-import { SYMPTOM_ICONS, SYMPTOM_LABELS, SYMPTOM_ORDER } from '../../constants/labels';
+import { SYMPTOM_COLORS, SYMPTOM_ICONS, SYMPTOM_LABELS, SYMPTOM_ORDER } from '../../constants/labels';
 import type { Symptom } from '../../types/meal';
 
 interface SymptomSelectorProps {
@@ -14,10 +14,14 @@ export function SymptomSelector({ value, onChange }: SymptomSelectorProps) {
     <View style={styles.grid}>
       {SYMPTOM_ORDER.map((symptom) => {
         const selected = symptom === value;
+        const symptomColor = SYMPTOM_COLORS[symptom];
         return (
           <TouchableOpacity
             key={symptom}
-            style={[styles.option, selected && styles.optionSelected]}
+            style={[
+              styles.option,
+              selected && { backgroundColor: symptomColor, borderColor: symptomColor },
+            ]}
             onPress={() => onChange(symptom)}
           >
             <Ionicons
@@ -53,10 +57,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
-  },
-  optionSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
   },
   optionLabel: {
     fontSize: 15,
