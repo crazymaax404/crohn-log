@@ -72,7 +72,12 @@ export function HomeScreen({ navigation }: Props) {
             <Ionicons name="restaurant" size={22} color={COLORS.surface} />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Diário Alimentar</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.headerTitle}>Diário Alimentar</Text>
+              <View style={styles.appTag}>
+                <Text style={styles.appTagText}>Crohn log</Text>
+              </View>
+            </View>
             <Text style={styles.headerSubtitle}>{meals.length} refeições registradas</Text>
           </View>
         </View>
@@ -123,10 +128,6 @@ export function HomeScreen({ navigation }: Props) {
           }
         />
       )}
-
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateMeal')}>
-        <Ionicons name="add" size={28} color={COLORS.surface} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -159,10 +160,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.textPrimary,
+  },
+  appTag: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  appTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.surface,
   },
   headerSubtitle: {
     fontSize: 12,
@@ -202,21 +219,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
   },
 });
