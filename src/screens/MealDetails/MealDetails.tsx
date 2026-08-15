@@ -18,6 +18,7 @@ import {
   useUpdateMealMutation,
 } from "../../hooks/useMeals";
 import { formatFullDate } from "../../utils/date";
+import { sortFoods } from "../../utils/foodNormalizer";
 import { styles } from "./mealDetails.styles";
 import type { MealDetailsScreenProps } from "./mealDetails.interfaces";
 import type { MealInput } from "../../types/meal";
@@ -137,7 +138,7 @@ export function MealDetailsScreen({
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>O QUE COMEU</Text>
           <View style={styles.foodsBox}>
-            {meal.foods.map((food) => (
+            {sortFoods(meal.foods).map((food) => (
               <View key={food} style={styles.foodRow}>
                 <View style={styles.foodDot} />
                 <Text style={styles.foodText}>{food}</Text>
@@ -146,14 +147,18 @@ export function MealDetailsScreen({
           </View>
         </View>
 
-        {meal.notes && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
-            <View style={styles.notesBox}>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
+          <View style={styles.notesBox}>
+            {meal.notes ? (
               <Text style={styles.notesText}>{meal.notes}</Text>
-            </View>
+            ) : (
+              <Text style={styles.notesPlaceholder}>
+                Nenhuma observação registrada.
+              </Text>
+            )}
           </View>
-        )}
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>COMO FICOU APÓS A REFEIÇÃO</Text>

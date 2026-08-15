@@ -5,3 +5,7 @@ export function normalizeFood(rawFood: string): string {
 export function isBlankFood(rawFood: string): boolean {
   return rawFood.trim().length === 0;
 }
+
+export function sortFoods(foods: string[]): string[] {
+  return [...foods].sort((a, b) => a.localeCompare(b, "pt-BR"));
+}

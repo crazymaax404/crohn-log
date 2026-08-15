@@ -66,4 +66,22 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textPrimary,
   },
+  notesBox: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 12,
+    gap: 4,
+  },
+  notesLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: COLORS.placeholder,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  notesText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontStyle: "italic",
+  },
 });

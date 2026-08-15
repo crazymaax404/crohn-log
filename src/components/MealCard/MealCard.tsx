@@ -8,6 +8,7 @@ import {
   SYMPTOM_ICONS,
   SYMPTOM_LABELS,
 } from "../../constants/labels";
+import { sortFoods } from "../../utils/foodNormalizer";
 import { styles } from "./mealCard.styles";
 import type { MealCardProps } from "./mealCard.interfaces";
 
@@ -52,12 +53,19 @@ export function MealCard({ meal, onPress }: MealCardProps) {
 
       <View style={styles.foodsBox}>
         <Text style={styles.foodsLabel}>O QUE COMEU:</Text>
-        {meal.foods.map((food) => (
+        {sortFoods(meal.foods).map((food) => (
           <Text key={food} style={styles.foodItem}>
             • {food}
           </Text>
         ))}
       </View>
+
+      {meal.notes && (
+        <View style={styles.notesBox}>
+          <Text style={styles.notesLabel}>OBSERVAÇÕES:</Text>
+          <Text style={styles.notesText}>{meal.notes}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }

@@ -106,6 +106,11 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textPrimary,
   },
+  notesPlaceholder: {
+    fontSize: 13,
+    color: COLORS.placeholder,
+    fontStyle: "italic",
+  },
   symptomPill: {
     flexDirection: "row",
     alignItems: "center",

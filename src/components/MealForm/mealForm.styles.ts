@@ -2,6 +2,9 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../constants/theme";
 
 export const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
   content: {
     padding: 20,
     gap: 22,

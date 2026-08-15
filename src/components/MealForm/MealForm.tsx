@@ -3,6 +3,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMemo, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
@@ -18,7 +19,11 @@ import { FoodList } from "../FoodList";
 import { FoodPainHistoryCard } from "../FoodPainHistoryCard";
 import { RenameFoodModal } from "../RenameFoodModal";
 import { COLORS } from "../../constants/theme";
-import { normalizeFood, isBlankFood } from "../../utils/foodNormalizer";
+import {
+  normalizeFood,
+  isBlankFood,
+  sortFoods,
+} from "../../utils/foodNormalizer";
 import {
   dateToISODate,
   formatBRDate,
@@ -45,7 +50,9 @@ export function MealForm({
     initialMeal?.mealType ?? "breakfast",
   );
   const [amount, setAmount] = useState<Amount>(initialMeal?.amount ?? "normal");
-  const [foods, setFoods] = useState<string[]>(initialMeal?.foods ?? []);
+  const [foods, setFoods] = useState<string[]>(() =>
+    sortFoods(initialMeal?.foods ?? []),
+  );
   const [foodInputValue, setFoodInputValue] = useState("");
   const [notes, setNotes] = useState(initialMeal?.notes ?? "");
   const [symptom, setSymptom] = useState<Symptom>(
@@ -92,7 +99,7 @@ export function MealForm({
       return;
     }
 
-    setFoods((prev) => [...prev, trimmed]);
+    setFoods((prev) => sortFoods([...prev, trimmed]));
     setFoodInputValue("");
   }
 
@@ -132,7 +139,9 @@ export function MealForm({
       {
         onSuccess: (affectedCount) => {
           setFoods((prev) =>
-            prev.map((food) => (food === originalFood ? trimmed : food)),
+            sortFoods(
+              prev.map((food) => (food === originalFood ? trimmed : food)),
+            ),
           );
           setRenamingFood(null);
           if (affectedCount > 0) {
@@ -178,113 +187,129 @@ export function MealForm({
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
-          <Text style={styles.sectionLabel}>DATA DA REFEIÇÃO</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.dateBox}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Text style={styles.dateText}>{formatBRDate(mealDate)}</Text>
-          <Ionicons name="calendar" size={18} color={COLORS.textSecondary} />
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={isoDateToDate(mealDate)}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={handleDateChange}
-          />
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Ionicons
-            name="restaurant-outline"
-            size={16}
-            color={COLORS.primary}
-          />
-          <Text style={styles.sectionLabel}>QUAL REFEIÇÃO?</Text>
-        </View>
-        <MealTypeSelector value={mealType} onChange={setMealType} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>QUANTO COMEU?</Text>
-        <AmountSelector value={amount} onChange={setAmount} />
-      </View>
-
-      <View style={styles.section}>
-        <FoodPainHistoryCard matches={painHistoryMatches} />
-        <View style={styles.sectionHeaderSpaced}>
-          <Text style={styles.sectionLabel}>O QUE VOCÊ COMEU?</Text>
-          <Text style={styles.itemCount}>{foods.length} ITENS</Text>
-        </View>
-        <FoodList
-          foods={foods}
-          onRemove={handleRemoveFood}
-          onLongPress={handleLongPressFood}
-        />
-        <FoodInput
-          value={foodInputValue}
-          onChangeText={setFoodInputValue}
-          onAdd={() => handleAddFood(foodInputValue)}
-          suggestions={suggestions}
-          onAddSuggestion={handleAddFood}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeaderSpaced}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoiding}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons
-              name="document-text-outline"
+              name="calendar-outline"
               size={16}
               color={COLORS.primary}
             />
-            <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
+            <Text style={styles.sectionLabel}>DATA DA REFEIÇÃO</Text>
           </View>
-          <Text style={styles.itemCount}>OPCIONAL</Text>
+          <TouchableOpacity
+            style={styles.dateBox}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.dateText}>{formatBRDate(mealDate)}</Text>
+            <Ionicons name="calendar" size={18} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={isoDateToDate(mealDate)}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleDateChange}
+            />
+          )}
         </View>
-        <TextInput
-          style={styles.notesInput}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Ex: Tinha cebola e alho na carne, molho muito apimentado..."
-          placeholderTextColor={COLORS.placeholder}
-          multiline
-          numberOfLines={3}
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons
+              name="restaurant-outline"
+              size={16}
+              color={COLORS.primary}
+            />
+            <Text style={styles.sectionLabel}>QUAL REFEIÇÃO?</Text>
+          </View>
+          <MealTypeSelector value={mealType} onChange={setMealType} />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>QUANTO COMEU?</Text>
+          <AmountSelector value={amount} onChange={setAmount} />
+        </View>
+
+        <View style={styles.section}>
+          <FoodPainHistoryCard matches={painHistoryMatches} />
+          <View style={styles.sectionHeaderSpaced}>
+            <Text style={styles.sectionLabel}>O QUE VOCÊ COMEU?</Text>
+            <Text style={styles.itemCount}>{foods.length} ITENS</Text>
+          </View>
+          <FoodList
+            foods={foods}
+            onRemove={handleRemoveFood}
+            onLongPress={handleLongPressFood}
+          />
+          <FoodInput
+            value={foodInputValue}
+            onChangeText={setFoodInputValue}
+            onAdd={() => handleAddFood(foodInputValue)}
+            suggestions={suggestions}
+            onAddSuggestion={handleAddFood}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderSpaced}>
+            <View style={styles.sectionHeader}>
+              <Ionicons
+                name="document-text-outline"
+                size={16}
+                color={COLORS.primary}
+              />
+              <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
+            </View>
+            <Text style={styles.itemCount}>OPCIONAL</Text>
+          </View>
+          <TextInput
+            style={styles.notesInput}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder="Ex: Tinha cebola e alho na carne, molho muito apimentado..."
+            placeholderTextColor={COLORS.placeholder}
+            multiline
+            numberOfLines={3}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>
+            COMO VOCÊ FICOU APÓS A REFEIÇÃO?
+          </Text>
+          <SymptomSelector value={symptom} onChange={setSymptom} />
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            submitting && styles.submitButtonDisabled,
+          ]}
+          onPress={handleSubmit}
+          disabled={submitting}
+        >
+          <Text style={styles.submitButtonText}>
+            {submitting ? "Salvando..." : submitLabel}
+          </Text>
+        </TouchableOpacity>
+
+        <RenameFoodModal
+          visible={renamingFood !== null}
+          initialValue={renamingFood ?? ""}
+          submitting={renameFood.isPending}
+          onCancel={handleCancelRename}
+          onConfirm={handleConfirmRename}
         />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>
-          COMO VOCÊ FICOU APÓS A REFEIÇÃO?
-        </Text>
-        <SymptomSelector value={symptom} onChange={setSymptom} />
-      </View>
-
-      <TouchableOpacity
-        style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
-        onPress={handleSubmit}
-        disabled={submitting}
-      >
-        <Text style={styles.submitButtonText}>
-          {submitting ? "Salvando..." : submitLabel}
-        </Text>
-      </TouchableOpacity>
-
-      <RenameFoodModal
-        visible={renamingFood !== null}
-        initialValue={renamingFood ?? ""}
-        submitting={renameFood.isPending}
-        onCancel={handleCancelRename}
-        onConfirm={handleConfirmRename}
-      />
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

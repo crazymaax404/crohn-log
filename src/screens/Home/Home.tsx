@@ -7,6 +7,7 @@ import { MealFilter, type MealFilterValue } from "../../components/MealFilter";
 import { PeriodSummary } from "../../components/PeriodSummary";
 import { SearchBar } from "../../components/SearchBar";
 import { COLORS } from "../../constants/theme";
+import { MEAL_TYPE_ORDER } from "../../constants/labels";
 import { useMealsQuery } from "../../hooks/useMeals";
 import { normalizeFood } from "../../utils/foodNormalizer";
 import { formatGroupHeader } from "../../utils/date";
@@ -26,6 +27,14 @@ function groupMealsByDate(meals: Meal[]) {
       groups.push({ date: meal.mealDate, meals: [] });
     }
     groups[index].meals.push(meal);
+  }
+
+  for (const group of groups) {
+    group.meals.sort(
+      (a, b) =>
+        MEAL_TYPE_ORDER.indexOf(a.mealType) -
+        MEAL_TYPE_ORDER.indexOf(b.mealType),
+    );
   }
 
   return groups;
